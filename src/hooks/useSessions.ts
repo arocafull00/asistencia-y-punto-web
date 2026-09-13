@@ -44,7 +44,21 @@ export function useSessions(groupId: number) {
     [groupId, triggerRefresh],
   );
 
-  return { getSessionByDate, getSessionById, getAllSessions: allSessions, createSession };
+  const updateSessionDate = useCallback(
+    async (sessionId: number, date: Date): Promise<void> => {
+      await db.sessions.update(sessionId, { date });
+      triggerRefresh();
+    },
+    [triggerRefresh],
+  );
+
+  return {
+    getSessionByDate,
+    getSessionById,
+    getAllSessions: allSessions,
+    createSession,
+    updateSessionDate,
+  };
 }
 
 export function useAttendances(sessionId: number) {

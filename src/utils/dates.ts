@@ -31,3 +31,12 @@ export function formatCsvDate(date: Date): string {
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
+
+export function toDateInputValue(date: Date): string {
+  return formatCsvDate(date);
+}
+
+export function dateFromInputValue(value: string): Date {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}

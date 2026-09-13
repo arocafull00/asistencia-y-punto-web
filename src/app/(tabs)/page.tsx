@@ -8,13 +8,16 @@ import GroupCard from "@/components/home/group-card";
 import EmptyState from "@/components/shared/empty-state";
 import Fab from "@/components/shared/fab";
 import { IonIcon } from "@/components/shared/ion-icon";
+import PwaInstallButton from "@/components/shared/pwa-install-button";
 import ScreenBody from "@/components/shared/screen-body";
 import ScreenHeader from "@/components/shared/screen-header";
 import { useGroups } from "@/hooks/useGroups";
+import { usePwaInstall } from "@/hooks/usePwaInstall";
 import { useAppStore } from "@/store";
 
 export default function HomePage() {
   const { groups } = useGroups();
+  const { canInstall, promptInstall } = usePwaInstall();
   const triggerRefresh = useAppStore((s) => s.triggerRefresh);
   const router = useRouter();
 
@@ -24,7 +27,13 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <ScreenHeader title="Mis Grupos" showBack={false} />
+      <ScreenHeader
+        title="Mis Grupos"
+        showBack={false}
+        rightAction={
+          canInstall ? <PwaInstallButton onClick={promptInstall} /> : undefined
+        }
+      />
 
       <ScreenBody className="flex-1">
         {groups.length === 0 ? (

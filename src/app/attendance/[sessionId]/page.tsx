@@ -1,10 +1,11 @@
 "use client";
 
-import { checkmarkCircle, checkmarkDone, refresh } from "ionicons/icons";
+import { checkmarkCircle, checkmarkDone, calendarOutline, refresh } from "ionicons/icons";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import AttendanceRow from "@/components/attendance/attendance-row";
+import SessionDatePickerSheet from "@/components/attendance/session-date-picker-sheet";
 import { IonIcon } from "@/components/shared/ion-icon";
 import ScreenBody from "@/components/shared/screen-body";
 import ScreenHeader from "@/components/shared/screen-header";
@@ -26,12 +27,15 @@ export default function AttendancePage() {
 
   const [groupName, setGroupName] = useState("GRUPO");
   const [sessionDate, setSessionDate] = useState(new Date());
-  const { createSession, getSessionById } = useSessions(groupId);
+  const { createSession, getSessionById, getSessionByDate, updateSessionDate } =
+    useSessions(groupId);
   const refreshKey = useAppStore((s) => s.refreshKey);
   const triggerRefresh = useAppStore((s) => s.triggerRefresh);
   const [actualSessionId, setActualSessionId] = useState<number | null>(null);
   const [memberList, setMemberList] = useState<{ id: number; name: string }[]>([]);
   const [draftByMember, setDraftByMember] = useState<Record<number, MemberAttendanceDraft>>({});
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [datePickerError, setDatePickerError] = useState<string | null>(null);
 
   useEffect(() => {
     triggerRefresh();
@@ -202,6 +206,31 @@ export default function AttendancePage() {
     router.back();
   };
 
+  const handleOpenDatePicker = () => {
+    setDatePickerError(null);
+    setDatePickerOpen(true);
+  };
+
+  const handleConfirmDate = async (newDate: Date) => {
+    if (isSameDay(newDate, sessionDate)) {
+      setDatePickerOpen(false);
+      return;
+    }
+
+    if (!actualSessionId) return;
+
+    const existing = await getSessionByDate(newDate);
+    if (existing && existing.id !== actualSessionId) {
+      setDatePickerError("Ya existe una sesión para esta fecha");
+      return;
+    }
+
+    await updateSessionDate(actualSessionId, newDate);
+    setSessionDate(newDate);
+    setDatePickerOpen(false);
+    setDatePickerError(null);
+  };
+
   if (!groupId) {
     return (
       <div className="flex min-h-dvh flex-col">
@@ -223,9 +252,19 @@ export default function AttendancePage() {
           <h2 className="text-[32px] leading-tight font-bold tracking-tight text-on-surface">
             {groupName}
           </h2>
-          <p className="mt-1 text-base capitalize text-on-surface-variant">
-            {formatLongDate(sessionDate)}
-          </p>
+          <div className="mt-1 flex items-center gap-2">
+            <p className="text-base capitalize text-on-surface-variant">
+              {formatLongDate(sessionDate)}
+            </p>
+            <button
+              type="button"
+              aria-label="Editar fecha"
+              onClick={handleOpenDatePicker}
+              className="flex h-8 w-8 items-center justify-center rounded-md active:bg-surface-container-low"
+            >
+              <IonIcon icon={calendarOutline} className="h-5 w-5 text-on-surface-variant" />
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-2">
@@ -280,6 +319,17 @@ export default function AttendancePage() {
           <IonIcon icon={checkmarkCircle} className="h-5 w-5 text-on-primary" />
         </button>
       </div>
+
+      <SessionDatePickerSheet
+        open={datePickerOpen}
+        onClose={() => {
+          setDatePickerOpen(false);
+          setDatePickerError(null);
+        }}
+        currentDate={sessionDate}
+        onConfirm={handleConfirmDate}
+        errorMessage={datePickerError}
+      />
     </div>
   );
 }
