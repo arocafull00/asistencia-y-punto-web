@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #00288e;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #1e40af;
+  --color-on-primary-container: #a8b8ff;
+  --color-secondary: #855300;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #fea619;
+  --color-on-secondary-container: #684000;
+  --color-surface: #f8f9ff;
+  --color-surface-dim: #d1dbec;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #eef4ff;
+  --color-surface-container: #e5eeff;
+  --color-surface-container-high: #dfe9fa;
+  --color-surface-container-highest: #d9e3f4;
+  --color-surface-variant: #d9e3f4;
+  --color-on-surface: #121c28;
+  --color-on-surface-variant: #444653;
+  --color-outline: #757684;
+  --color-outline-variant: #c4c5d5;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-primary-fixed: #dde1ff;
+  --color-primary-fixed-dim: #b8c4ff;
+  --color-present: #16a34a;
+  --color-present-container: #dcfce7;
+  --color-absent: #dc2626;
+  --color-absent-container: #fee2e2;
+  --color-justified: #d97706;
+  --color-justified-container: #fef3c7;
+  --color-background: #f8f9ff;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-margin: 24px;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--color-surface-dim);
+  color: var(--color-on-surface);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-shell {
+  min-height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  box-shadow: 0 0 40px rgba(0, 40, 142, 0.08);
+}
+
+.shadow-card {
+  box-shadow: 0 1px 4px rgba(0, 40, 142, 0.05);
+}
+
+.shadow-elevated {
+  box-shadow: 0 4px 12px rgba(0, 40, 142, 0.08);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
