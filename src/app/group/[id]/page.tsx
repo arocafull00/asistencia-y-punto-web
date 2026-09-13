@@ -85,18 +85,10 @@ export default function GroupPage() {
     }
   };
 
-  if (!group) {
-    return (
-      <div className="flex min-h-dvh flex-col">
-        <p className="mt-8 text-center text-lg font-semibold text-error">Grupo no encontrado</p>
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-dvh flex-col">
       <ScreenHeader
-        title={group.name.toUpperCase()}
+        title={group?.name.toUpperCase() ?? ""}
         titleSize="h1"
         showBack
         rightAction={
@@ -163,7 +155,7 @@ export default function GroupPage() {
         open={menuVisible}
         onClose={() => setMenuVisible(false)}
         onRename={() => {
-          setNewGroupName(group.name);
+          setNewGroupName(group?.name ?? "");
           setRenameModalVisible(true);
         }}
         onHistory={() => router.push(`/history/${groupId}`)}

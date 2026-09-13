@@ -1,32 +1,48 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import Button from "@/components/shared/button";
 import Input from "@/components/shared/input";
 import ScreenBody from "@/components/shared/screen-body";
 import ScreenHeader from "@/components/shared/screen-header";
 import { useMembers } from "@/hooks/useMembers";
+import type { MemberWithAttendance } from "@/types";
 
 export default function MemberPage() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const isNew = params.id === "new";
   const numericGroupId = Number(searchParams.get("groupId"));
 
   const { members, createMember, updateMember } = useMembers(numericGroupId);
   const existingMember = isNew ? null : members.find((m) => m.id === Number(params.id));
 
-  const [name, setName] = useState("");
-  const [notes, setNotes] = useState("");
+  const formKey = isNew ? "new" : existingMember ? String(existingMember.id) : `pending-${params.id}`;
 
-  useEffect(() => {
-    if (!existingMember) return;
-    setName(existingMember.name);
-    setNotes(existingMember.notes ?? "");
-  }, [existingMember]);
+  return (
+    <MemberEditor
+      key={formKey}
+      isNew={isNew}
+      existingMember={existingMember}
+      createMember={createMember}
+      updateMember={updateMember}
+    />
+  );
+}
+
+type MemberEditorProps = {
+  isNew: boolean;
+  existingMember: MemberWithAttendance | null | undefined;
+  createMember: (name: string, notes?: string) => Promise<void>;
+  updateMember: (id: number, name: string, notes?: string) => Promise<void>;
+};
+
+function MemberEditor({ isNew, existingMember, createMember, updateMember }: MemberEditorProps) {
+  const router = useRouter();
+  const [name, setName] = useState(isNew ? "" : (existingMember?.name ?? ""));
+  const [notes, setNotes] = useState(isNew ? "" : (existingMember?.notes ?? ""));
 
   const handleSave = async () => {
     if (!name.trim()) return;

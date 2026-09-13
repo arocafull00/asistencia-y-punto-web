@@ -202,7 +202,7 @@ export default function ImportCsvSheet({
         </>
       ) : null}
 
-      <div className="mt-6 flex justify-end gap-2">
+      <div className="mt-6 flex justify-end gap-2 pb-8">
         <Button title="Cancelar" variant="ghost" onClick={handleClose} disabled={importing} />
         <Button
           title={importing ? "Importando..." : "Importar"}

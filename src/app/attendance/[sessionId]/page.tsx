@@ -2,7 +2,7 @@
 
 import { checkmarkCircle, checkmarkDone, calendarOutline, refresh } from "ionicons/icons";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import AttendanceRow from "@/components/attendance/attendance-row";
 import SessionDatePickerSheet from "@/components/attendance/session-date-picker-sheet";
@@ -31,7 +31,8 @@ export default function AttendancePage() {
     useSessions(groupId);
   const refreshKey = useAppStore((s) => s.refreshKey);
   const triggerRefresh = useAppStore((s) => s.triggerRefresh);
-  const [actualSessionId, setActualSessionId] = useState<number | null>(null);
+  const [newSessionId, setNewSessionId] = useState<number | null>(null);
+  const actualSessionId = isNew ? newSessionId : Number(sessionIdParam);
   const [memberList, setMemberList] = useState<{ id: number; name: string }[]>([]);
   const [draftByMember, setDraftByMember] = useState<Record<number, MemberAttendanceDraft>>({});
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -54,38 +55,44 @@ export default function AttendancePage() {
       .catch(() => setMemberList([]));
   }, [groupId]);
 
-  const loadSession = useCallback(async () => {
-    if (!groupId) return;
-    const sessions = await db.sessions.where("groupId").equals(groupId).toArray();
-    const existing = sessions.find((s) => isSameDay(new Date(s.date), new Date()));
+  useEffect(() => {
+    if (!groupId || !isNew) return;
 
-    if (existing) {
-      setActualSessionId(existing.id!);
-      setSessionDate(new Date(existing.date));
-      return;
-    }
+    let cancelled = false;
 
-    if (isNew) {
-      const newId = await createSession(new Date());
-      setActualSessionId(newId);
-      setSessionDate(new Date());
-    }
+    db.sessions
+      .where("groupId")
+      .equals(groupId)
+      .toArray()
+      .then(async (sessions) => {
+        if (cancelled) return;
+
+        const existing = sessions.find((s) => isSameDay(new Date(s.date), new Date()));
+        if (existing) {
+          setNewSessionId(existing.id!);
+          setSessionDate(new Date(existing.date));
+          return;
+        }
+
+        const newId = await createSession(new Date());
+        if (cancelled) return;
+
+        setNewSessionId(newId);
+        setSessionDate(new Date());
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [groupId, isNew, createSession]);
 
   useEffect(() => {
-    if (!groupId) return;
+    if (!groupId || isNew) return;
 
-    if (isNew) {
-      loadSession();
-      return;
-    }
-
-    const numericSessionId = Number(sessionIdParam);
-    setActualSessionId(numericSessionId);
-    getSessionById(numericSessionId).then((session) => {
+    getSessionById(Number(sessionIdParam)).then((session) => {
       if (session) setSessionDate(new Date(session.date));
     });
-  }, [isNew, sessionIdParam, loadSession, groupId, getSessionById]);
+  }, [groupId, isNew, sessionIdParam, getSessionById]);
 
   useEffect(() => {
     if (!actualSessionId) return;
@@ -230,17 +237,6 @@ export default function AttendancePage() {
     setDatePickerOpen(false);
     setDatePickerError(null);
   };
-
-  if (!groupId) {
-    return (
-      <div className="flex min-h-dvh flex-col">
-        <ScreenHeader title="Pasar Lista" showBack />
-        <ScreenBody>
-          <p className="text-center text-on-surface-variant">Grupo no especificado</p>
-        </ScreenBody>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-dvh flex-col">
