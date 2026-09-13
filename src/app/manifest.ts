@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Asistencia y Punto",
-    short_name: "Asistencia",
+    short_name: "Asistencia y Punto",
     description: "Control de asistencia de grupos y equipos",
     start_url: "/",
     display: "standalone",
